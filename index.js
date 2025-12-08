@@ -61,11 +61,20 @@ async function run() {
       res.send(result);
     });
     app.get("/lessons", async (req, res) => {
-      const { isPrivate, tone, category } = req.query;
-      const { email, limit = 0, skip = 0, sort = "postedAt" } = req.query;
+      const {
+        isPrivate,
+        tone,
+        category,
+        email,
+        limit = 0,
+        skip = 0,
+        sort = "postedAt",
+        search = "",
+      } = req.query;
       const query = {};
       const sortOption = {};
       sortOption[sort || "postedAt"] = -1;
+
       if (isPrivate) {
         query.isPrivate = isPrivate;
       }
@@ -78,6 +87,10 @@ async function run() {
       if (category) {
         query.category = category;
       }
+      if (search) {
+        query.title = { $regex: search, $options: "i" };
+      }
+
       const result = await lessonsCollection
         .find(query)
         .sort(sortOption)
