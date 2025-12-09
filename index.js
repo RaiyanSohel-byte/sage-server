@@ -306,35 +306,6 @@ async function run() {
     });
 
     //payment related apis
-    // app.post("/create-checkout-session", async (req, res) => {
-    //   const paymentInfo = req.body;
-    //   const session = await stripe.checkout.sessions.create({
-    //     line_items: [
-    //       {
-    //         // Provide the exact Price ID (for example, price_1234) of the product you want to sell
-    //         price_data: {
-    //           currency: "USD",
-    //           unit_amount: 3000,
-    //           product_data: {
-    //             name: "Be A Premium Member",
-    //           },
-    //         },
-    //         quantity: 1,
-    //       },
-    //     ],
-    //     mode: "payment",
-    //     metadata: {
-    //       email: paymentInfo.email,
-    //       displayName: paymentInfo.displayName,
-    //       photoURL: paymentInfo.photoURL,
-    //     },
-    //     customer_email: paymentInfo.email,
-    //     success_url: `${process.env.SITE_DOMAIN}/payment-success`,
-    //     cancel_url: `${process.env.SITE_DOMAIN}/payment-cancelled`,
-    //   });
-    //   res.send({ url: session.url });
-    // });
-
     app.post("/payment-checkout-session", async (req, res) => {
       const paymentInfo = req.body;
       const session = await stripe.checkout.sessions.create({
@@ -368,7 +339,6 @@ async function run() {
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
   } finally {
-    // Ensures that the client will close when you finish/error
     // await client.close();
   }
 }
