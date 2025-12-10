@@ -124,6 +124,7 @@ async function run() {
         search = "",
         isFeatured,
       } = req.query;
+      console.log("req", req.query);
 
       const query = {};
       const sortOption = {};
@@ -293,7 +294,7 @@ async function run() {
         $inc: { favorites: -1 },
       };
       const favoritesCount = await lessonsCollection.updateOne(filter, update);
-      console.log("result and likesCount", result);
+
       res.send({ result, favoritesCount });
     });
 
@@ -308,7 +309,7 @@ async function run() {
         $inc: { likes: 1 },
       };
       const likesCount = await lessonsCollection.updateOne(filter, update);
-      console.log("result and likesCount", result, likesCount);
+
       res.send({ result, likesCount });
     });
     app.get("/likes", async (req, res) => {
@@ -323,7 +324,7 @@ async function run() {
         query.postId = postId;
       }
       const result = await likesCollection.find(query).toArray();
-      console.log(result);
+
       res.send(result);
     });
     app.get("/likes/:id", async (req, res) => {
@@ -348,7 +349,7 @@ async function run() {
         $inc: { likes: -1 },
       };
       const likesCount = await lessonsCollection.updateOne(filter, update);
-      console.log("result and likesCount", result);
+
       res.send({ result, likesCount });
     });
 
