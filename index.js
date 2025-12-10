@@ -63,6 +63,12 @@ async function run() {
         const updatedUser = await usersCollection.findOne(userQuery);
         const userEmail = updatedUser.email;
 
+        await lessonsCollection.updateMany(
+          { email: userEmail },
+          {
+            $set: { authorImage: photoURL, name: displayName },
+          }
+        );
         await favoritesCollection.updateMany(
           { posterEmail: userEmail },
           { $set: { posterName: displayName, posterImage: photoURL } }
