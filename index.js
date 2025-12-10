@@ -185,6 +185,18 @@ async function run() {
       const result = await lessonsCollection.updateOne(query, update);
       res.send(result);
     });
+    app.delete("/lessons/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await lessonsCollection.deleteOne(query);
+      const deleteLikes = await likesCollection.deleteMany({
+        postId: id,
+      });
+      const deleteFavorites = await favoritesCollection.deleteMany({
+        postId: id,
+      });
+      res.send({ result, deleteLikes, deleteFavorites });
+    });
 
     //favorite related apis
     app.post("/favorites", async (req, res) => {
