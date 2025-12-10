@@ -219,6 +219,7 @@ async function run() {
     });
     app.patch("/lessons/:id", async (req, res) => {
       const updatedLesson = req.body;
+      updatedLesson.postedAt = new Date();
       updatedLesson.commentedAt = new Date();
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
