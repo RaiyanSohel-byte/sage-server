@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 require("dotenv").config();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 8000;
 const admin = require("firebase-admin");
 
 const serviceAccount = require("./firebase-admin.json");
@@ -264,8 +264,11 @@ async function run() {
       updatedLesson.commentedAt = new Date();
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
+      console.log(query);
       const update = {
-        $set: updatedLesson,
+        $addToSet: {
+          comments: updatedLesson,
+        },
       };
       const result = await lessonsCollection.updateOne(query, update);
       res.send(result);
