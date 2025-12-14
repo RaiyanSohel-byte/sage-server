@@ -273,6 +273,46 @@ async function run() {
       const result = await lessonsCollection.updateOne(query, update);
       res.send(result);
     });
+    app.patch(
+      "/lessons/:id/status",
+      verifyFBToken,
+      verifyAdmin,
+      async (req, res) => {
+        try {
+          const { id } = req.params;
+          const { status } = req.body;
+
+          // Validate status
+          const allowedStatus = ["pending", "approved", "rejected"];
+          if (!allowedStatus.includes(status)) {
+            return res.status(400).send({ message: "Invalid status value" });
+          }
+
+          const result = await lessonsCollection.updateOne(
+            { _id: new ObjectId(id) },
+            {
+              $set: {
+                status,
+                statusUpdatedAt: new Date(),
+              },
+            }
+          );
+
+          if (result.matchedCount === 0) {
+            return res.status(404).send({ message: "Lesson not found" });
+          }
+
+          res.send({
+            success: true,
+            message: `Lesson status updated to ${status}`,
+          });
+        } catch (error) {
+          console.error("Status update error:", error);
+          res.status(500).send({ message: "Failed to update lesson status" });
+        }
+      }
+    );
+
     app.delete("/lessons/:id", verifyFBToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
