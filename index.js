@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 require("dotenv").config();
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 5000;
 const admin = require("firebase-admin");
 
 const serviceAccount = require("./firebase-admin.json");
@@ -24,7 +24,7 @@ const verifyFBToken = async (req, res, next) => {
   try {
     const idToken = token.split(" ")[1];
     const decoded = await admin.auth().verifyIdToken(idToken);
-    console.log("decoded in the token", decoded);
+
     req.decoded_email = decoded.email;
     next();
   } catch (err) {
@@ -143,6 +143,33 @@ async function run() {
           .send({ success: false, message: "Update failed", error });
       }
     });
+    app.patch(
+      "/users/:id/role",
+      verifyFBToken,
+      verifyAdmin,
+      async (req, res) => {
+        const { id } = req.params;
+        const { role } = req.body;
+
+        if (!["admin", "user"].includes(role)) {
+          return res.status(400).send({ message: "Invalid role" });
+        }
+
+        const result = await usersCollection.updateOne(
+          { _id: new ObjectId(id) },
+          { $set: { role } }
+        );
+
+        if (result.matchedCount === 0) {
+          return res.status(404).send({ message: "User not found" });
+        }
+
+        res.send({
+          success: true,
+          message: `User role updated to ${role}`,
+        });
+      }
+    );
 
     //lessons related apis
     app.post("/lessons", verifyFBToken, async (req, res) => {
@@ -264,7 +291,7 @@ async function run() {
       updatedLesson.commentedAt = new Date();
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      console.log(query);
+
       const update = {
         $addToSet: {
           comments: updatedLesson,
@@ -312,6 +339,58 @@ async function run() {
         }
       }
     );
+    app.patch(
+      "/lessons/:id/featured",
+      verifyFBToken,
+      verifyAdmin,
+      async (req, res) => {
+        try {
+          const { id } = req.params;
+          const { isFeatured } = req.body;
+
+          const result = await lessonsCollection.updateOne(
+            { _id: new ObjectId(id) },
+            {
+              $set: {
+                isFeatured,
+                featuredAt: new Date(),
+              },
+            }
+          );
+
+          if (result.matchedCount === 0) {
+            return res.status(404).send({ message: "Lesson not found" });
+          }
+
+          res.send({ success: true, isFeatured });
+        } catch (error) {
+          console.error("Feature update failed", error);
+          res.status(500).send({ message: "Failed to update featured status" });
+        }
+      }
+    );
+    app.patch("/lessons/:id/edit", verifyFBToken, async (req, res) => {
+      const id = req.params.id;
+      const updatedLesson = req.body;
+
+      const result = await lessonsCollection.updateOne(
+        { _id: new ObjectId(id) },
+        {
+          $set: {
+            title: updatedLesson.title,
+            description: updatedLesson.description,
+            category: updatedLesson.category,
+            tone: updatedLesson.tone,
+            isPrivate: updatedLesson.isPrivate,
+            isPremiumAccess: updatedLesson.isPremiumAccess,
+            image: updatedLesson.image,
+            updatedAt: new Date(),
+          },
+        }
+      );
+
+      res.send(result);
+    });
 
     app.delete("/lessons/:id", verifyFBToken, async (req, res) => {
       const id = req.params.id;
